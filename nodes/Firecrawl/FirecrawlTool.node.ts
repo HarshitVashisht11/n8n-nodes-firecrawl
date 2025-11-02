@@ -5,7 +5,7 @@ import type {
 	INodeTypeDescription,
 	SupplyData,
 } from 'n8n-workflow';
-import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 
@@ -52,15 +52,15 @@ async function makeFirecrawlRequest(
  */
 export class FirecrawlTool implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Firecrawl Tool',
+		displayName: 'Firecrawl',
 		name: 'firecrawlTool',
 		icon: 'file:firecrawl.svg',
 		group: ['transform'],
 		version: 1,
-		subtitle: '={{$parameter["toolType"] || "Firecrawl Tool"}}',
+		subtitle: '={{$parameter["toolType"] || "Firecrawl"}}',
 		description: 'Use Firecrawl to scrape, search, and map websites with AI agents',
 		defaults: {
-			name: 'Firecrawl Tool',
+			name: 'Firecrawl',
 		},
 		codex: {
 			categories: ['AI'],
@@ -79,7 +79,7 @@ export class FirecrawlTool implements INodeType {
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-inputs-wrong-regular-node
 		inputs: [],
 		// eslint-disable-next-line n8n-nodes-base/node-class-description-outputs-wrong
-		outputs: [NodeConnectionTypes.AiTool],
+		outputs: [NodeConnectionType.AiTool],
 		outputNames: ['Tool'],
 		credentials: [
 			{
@@ -166,12 +166,12 @@ export class FirecrawlTool implements INodeType {
 		 */
 		const createToolHandler = (op: string) => {
 			return async (input: IDataObject): Promise<string> => {
-				const { index } = this.addInputData(NodeConnectionTypes.AiTool, [[{ json: input }]]);
+				const { index } = this.addInputData(NodeConnectionType.AiTool, [[{ json: input }]]);
 
 				try {
 					const response = await makeFirecrawlRequest(this, op, input);
 					const outputData = { response };
-					void this.addOutputData(NodeConnectionTypes.AiTool, index, [[{ json: outputData }]]);
+					void this.addOutputData(NodeConnectionType.AiTool, index, [[{ json: outputData }]]);
 					return JSON.stringify(response, null, 2);
 				} catch (error) {
 					if (error instanceof NodeOperationError) {
@@ -182,7 +182,7 @@ export class FirecrawlTool implements INodeType {
 						node,
 						`Firecrawl API error for ${op}: ${errorMessage}. Input: ${JSON.stringify(input)}`,
 					);
-					void this.addOutputData(NodeConnectionTypes.AiTool, index, nodeError);
+					void this.addOutputData(NodeConnectionType.AiTool, index, nodeError);
 					throw nodeError;
 				}
 			};
